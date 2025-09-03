@@ -1,20 +1,75 @@
-import { useId } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router";
 import Logo from "@/assets/icons/Logo";
+import Password from "@/components/ui/password";
+import { useRegisterMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
+
+const formSchema = z
+  .object({
+    name: z.string().min(4, { error: "Full name is required." }),
+    email: z.email({ error: "Invalid email address." }),
+    password: z
+      .string()
+      .min(8, { error: "Password must be at least 6 characters." }),
+    confirmPassword: z.string().min(8, { error: "Confirm your password." }),
+    terms: z.boolean().refine((val) => val === true, {
+      error: "You must accept the terms and conditions.",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 
 export default function RegisterPage() {
-  const id = useId();
+  const [register] = useRegisterMutation();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      terms: false,
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    const userInfo = {
+      name: data.name,
+      email: data.email,
+      Password: data.password,
+    };
+    try {
+      const result = await register(userInfo).unwrap();
+      console.log(result);
+      toast.success("User Created Successfully");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gray-100 dark:bg-zinc-900">
       {/* Left side (Travel Image) */}
       <div className="hidden md:block">
         <img
-          src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80"
+          src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=1000&q=80"
           alt="Travel adventure"
           className="h-full w-full object-cover"
         />
@@ -36,65 +91,109 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Form */}
-          <form className="space-y-6">
-            <div className="space-y-4">
+          {/* ✅ Form with React Hook Form + Zod */}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Full Name */}
-              <div className="grid gap-2">
-                <Label className="text-white">Full Name</Label>
-                <Input
-                  id={`${id}-name`}
-                  type="text"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Email */}
-              <div className="grid gap-2">
-                <Label className="text-white">Email Address</Label>
-                <Input
-                  id={`${id}-email`}
-                  type="email"
-                  placeholder="john@example.com"
-                  required
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Email Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="john@example.com"
+                        type="email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Password */}
-              <div className="grid gap-2">
-                <Label className="text-white">Password</Label>
-                <Input type="password" placeholder="********" required />
-              </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Password</FormLabel>
+                    <FormControl>
+                      <Password {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Confirm Password */}
-              <div className="grid gap-2">
-                <Label className="text-white">Confirm Password</Label>
-                <Input
-                  id={`${id}-confirm`}
-                  type="password"
-                  placeholder="********"
-                  required
-                />
-              </div>
-            </div>
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">
+                      Confirm Password
+                    </FormLabel>
+                    <FormControl>
+                      <Password {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Terms & Conditions */}
-            <div className="flex items-center gap-2 text-sm">
-              <Checkbox required />
-              <Label className="text-muted-foreground font-normal">
-                I agree to the{" "}
-                <Link to="/terms" className="underline underline-offset-4">
-                  terms and conditions
-                </Link>
-              </Label>
-            </div>
+              {/* Terms & Conditions */}
+              <FormField
+                control={form.control}
+                name="terms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="leading-none">
+                      <FormLabel className="text-muted-foreground font-normal">
+                        I agree to the{" "}
+                        <Link
+                          to="/terms"
+                          className="underline underline-offset-4"
+                        >
+                          terms and conditions
+                        </Link>
+                      </FormLabel>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Submit Button */}
-            <Button type="submit" className="w-full">
-              Register
-            </Button>
-          </form>
+              {/* Submit Button */}
+              <Button type="submit" className="w-full">
+                Register
+              </Button>
+            </form>
+          </Form>
 
           {/* Divider */}
           <div className="relative text-center text-sm">
