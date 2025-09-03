@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Logo from "@/assets/icons/Logo";
 import Password from "@/components/ui/password";
 import { useRegisterMutation } from "@/redux/features/auth/auth.api";
@@ -38,6 +38,7 @@ const formSchema = z
 
 export default function RegisterPage() {
   const [register] = useRegisterMutation();
+  const naviget = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,12 +54,14 @@ export default function RegisterPage() {
     const userInfo = {
       name: data.name,
       email: data.email,
-      Password: data.password,
+      password: data.password,
     };
+    console.log(userInfo);
     try {
       const result = await register(userInfo).unwrap();
       console.log(result);
       toast.success("User Created Successfully");
+      naviget("/verify");
     } catch (error) {
       console.log(error);
     }

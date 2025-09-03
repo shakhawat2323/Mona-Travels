@@ -1,17 +1,70 @@
-import { useId } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Logo from "@/assets/icons/Logo";
+import Password from "@/components/ui/password";
+import { useLoginMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
+
+const formSchema = z.object({
+  email: z.email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
+  remember: z.boolean().refine((val) => val === true, {
+    message: "You must check Remember me to login.",
+  }),
+});
 
 export default function LoginPage() {
-  const id = useId();
+  const [login] = useLoginMutation();
+  const naviget = useNavigate();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+  });
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    const userInfo = {
+      email: data.email,
+      password: data.password,
+    };
+    console.log("Login Payload:", userInfo);
+
+    try {
+      const result = await login(userInfo).unwrap();
+      console.log(result);
+      toast.success("Logged in successfully");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.data?.message || "Login failed");
+      if (error.status === 401) {
+        naviget("/verify", { state: data.email });
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gray-100 dark:bg-zinc-900">
-      {/* Left side (Image) */}
+      {/* Left side image */}
       <div className="hidden md:block">
         <img
           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80"
@@ -20,7 +73,7 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Right side (Form) */}
+      {/* Right side (form) */}
       <div className="flex flex-col justify-center px-6 sm:px-10 py-12 bg-white dark:bg-zinc-950 shadow-lg">
         <div className="mx-auto w-full max-w-md space-y-8">
           {/* Header */}
@@ -37,51 +90,72 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form className="space-y-6">
-            <div className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor={`${id}-email`}>Email</Label>
-                <Input
-                  id={`${id}-email`}
-                  type="email"
-                  placeholder="john@example.com"
-                  required
-                />
-              </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="john@example.com"
+                        type="email"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <div className="grid gap-2">
-                <Label htmlFor={`${id}-password`}>Password</Label>
-                <Input
-                  id={`${id}-password`}
-                  type="password"
-                  placeholder="********"
-                  required
-                />
-              </div>
-            </div>
+              {/* Password */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Password</FormLabel>
+                    <FormControl>
+                      <Password {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Checkbox id={`${id}-remember`} />
-                <Label
-                  htmlFor={`${id}-remember`}
-                  className="text-muted-foreground font-normal"
-                >
-                  Remember me
-                </Label>
-              </div>
-              <Link
-                to="/forgot-password"
-                className="underline underline-offset-4 hover:text-primary"
+              {/* Remember Me */}
+              <FormField
+                control={form.control}
+                name="remember"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-muted-foreground font-normal">
+                      Remember me
+                    </FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={!form.watch("remember")}
               >
-                Forgot password?
-              </Link>
-            </div>
-
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </form>
+                Login
+              </Button>
+            </form>
+          </Form>
 
           {/* Divider */}
           <div className="relative text-center text-sm">

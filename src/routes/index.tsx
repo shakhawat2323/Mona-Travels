@@ -5,6 +5,7 @@ import RegisterForm from "@/modules/Authentication/RegisterForm";
 import About from "@/pages/About";
 
 import analytics from "@/pages/analytics";
+import verify from "@/pages/verify";
 
 import { createBrowserRouter } from "react-router";
 
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
   {
     Component: LoginForm,
     path: "login",
+  },
+  {
+    Component: verify,
+    path: "verify",
   },
   {
     Component: AdminLayout,
