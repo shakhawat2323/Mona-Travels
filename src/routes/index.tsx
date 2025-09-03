@@ -1,6 +1,8 @@
 import App from "@/App";
 import AdminLayout from "@/components/layout/AdminLayout";
-import About from "@/pages/about";
+import LoginForm from "@/modules/Authentication/LoginForm";
+import RegisterForm from "@/modules/Authentication/RegisterForm";
+import About from "@/pages/About";
 
 import analytics from "@/pages/analytics";
 
@@ -16,6 +18,14 @@ export const router = createBrowserRouter([
         path: "about",
       },
     ],
+  },
+  {
+    Component: RegisterForm,
+    path: "register",
+  },
+  {
+    Component: LoginForm,
+    path: "login",
   },
   {
     Component: AdminLayout,

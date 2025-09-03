@@ -24,7 +24,7 @@ const navigationLinks = [
 export default function Navbar() {
   return (
     <header className="border-b">
-      <div className=" mx-auto px-4 flex h-16 items-center justify-between gap-4">
+      <div className=" lg:w-11/12 mx-auto px-4 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
@@ -78,15 +78,15 @@ export default function Navbar() {
           </Popover>
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <a href="#" className="text-primary hover:text-primary/90">
+            <Link to="/" className="text-primary hover:text-primary/90">
               <Logo />
-            </a>
-            <a
-              href="/"
-              className="text-2xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300"
+            </Link>
+            <Link
+              to="/"
+              className="text-2xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300 leading-[0.9]"
             >
               Mona <span className="text-yellow-400">Travels</span>
-            </a>
+            </Link>
             {/* Navigation menu */}
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
@@ -108,7 +108,9 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <ModeToggle />
           <Button asChild className="text-sm">
-            <Link to="/login">Login</Link>
+            <Link variant="outline" to="/login">
+              Login
+            </Link>
           </Button>
         </div>
       </div>
