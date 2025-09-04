@@ -1,5 +1,5 @@
 import App from "@/App";
-import AdminLayout from "@/components/layout/AdminLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import LoginForm from "@/modules/Authentication/LoginForm";
 import RegisterForm from "@/modules/Authentication/RegisterForm";
 import About from "@/pages/About";
@@ -33,12 +33,22 @@ export const router = createBrowserRouter([
     path: "verify",
   },
   {
-    Component: AdminLayout,
+    Component: DashboardLayout,
     path: "/admin",
     children: [
       {
         Component: analytics,
         path: "analytics",
+      },
+    ],
+  },
+  {
+    Component: DashboardLayout,
+    path: "/user",
+    children: [
+      {
+        Component: analytics,
+        path: "bookings",
       },
     ],
   },

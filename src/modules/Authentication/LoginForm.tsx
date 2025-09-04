@@ -18,6 +18,7 @@ import Logo from "@/assets/icons/Logo";
 import Password from "@/components/ui/password";
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
 import { toast } from "sonner";
+import config from "@/config";
 
 const formSchema = z.object({
   email: z.email({ message: "Invalid email address" }),
@@ -168,7 +169,12 @@ export default function LoginPage() {
           </div>
 
           {/* Google login */}
-          <Button type="button" variant="outline" className="w-full">
+          <Button
+            onClick={() => window.open(`${config.baseUrl}/auth/google`)}
+            type="button"
+            variant="outline"
+            className="w-full"
+          >
             Login with Google
           </Button>
 
